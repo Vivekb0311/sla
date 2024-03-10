@@ -1,0 +1,122 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "service.fullname" . }}
+  labels:
+    {{- include "service.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "service.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- include "service.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.env.servicePort }}
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.readinessProbe.path }}
+              port: {{ .Values.env.servicePort }}
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+        {{- if .Values.resourceLimit.enabled }} 
+          resources:
+            limits:
+              cpu: {{ .Values.resourcesLimits.cpu }}
+              memory: {{ .Values.resourcesLimits.memory }}
+            requests:
+              cpu: {{ .Values.requestsResources.cpu }}
+              memory: {{ .Values.requestsResources.memory }}
+        {{- end }}
+          lifecycle: 
+            postStart:
+              exec:
+                command: ["/bin/bash", "-c", "nohup /opt/melodyposthook.sh > hook.log 2>&1 &"]     
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+          env:
+          - name: MYSQL_URL
+            value: {{ .Values.env.mysqlUrl }}
+          - name: MYSQL_USERNAME
+            value: {{ .Values.env.mysqlUsername }}
+          - name: MYSQL_CHECKSUM
+            value: {{ .Values.env.mysqlChecksum }}       
+          - name: SERVICE_PORT
+            value: {{ .Values.env.servicePort | quote }}
+          - name: SERVICE_CONTEXT
+            value: {{ .Values.env.serviceContext | quote }}         
+          - name: XMX
+            value: {{ .Values.env.Xmx | quote }}
+          - name: XMS
+            value: {{ .Values.env.Xms | quote }}
+          - name: COMMONS_STORAGE_TYPE
+            value: {{ .Values.env.commonsStorageType | quote }}
+          - name: PLATFORM_URL
+            value: {{ .Values.env.baseutilityUrl }}
+          - name: SCHEDULING_URL
+            value: {{ .Values.env.serviceUrl }}
+          - name: MELODY_CONTEXT
+            value: {{ .Values.env.melodyContext | quote }}
+          - name: READINESS
+            value: {{ .Values.env.readiness | quote }}
+          - name: MELODY_CREDENTIALS
+            value: {{ .Values.env.melodyCredentials | quote }}
+          - name : MELODY_URL
+            value: {{ .Values.env.melodyUrl | quote }}
+          - name : MELODY_PORT
+            value: {{ .Values.env.port | quote }}
+          - name : DEPLOYMENT_NAME
+            value: {{ .Values.env.deploymentName | quote }}
+        - name: {{ .Values.sidecar.Name }}
+          image: "{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}"
+          imagePullPolicy: {{ .Values.sidecar.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.sidecar.ports.containerPort }}
+              protocol: TCP                          
+          volumeMounts:
+          - name: {{ .Values.volumeName.applicationProp }}
+            mountPath: {{ .Values.volumeMounts.applicationPropPath }}
+            subPath: application.properties
+          - name: {{ .Values.volumeName.configProp }}
+            mountPath: {{ .Values.volumeMounts.configPropPath }}
+            subPath: config.properties  
+      volumes:
+      - name: {{ .Values.volumeName.applicationProp }}
+        configMap:
+          name: {{ include "service.fullname" . }}-application-prop
+          defaultMode: 0755 
+      - name: {{ .Values.volumeName.configProp }}
+        configMap:
+          name: {{ include "service.fullname" . }}-config-prop
+          defaultMode: 0755                          
+

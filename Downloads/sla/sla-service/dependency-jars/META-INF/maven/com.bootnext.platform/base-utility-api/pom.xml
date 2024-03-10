@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.bootnext.platform</groupId>
+	<artifactId>base-utility-api</artifactId>
+	<version>3.1.0</version>
+	<packaging>jar</packaging>
+	<name>Base Utility API</name>
+	<properties>
+		<sonar.coverage.exclusions>**/model/**, **/wrapper/**, **/audit/**,
+			src/main/java/com.bootnext/product/utils/Base64.java
+		</sonar.coverage.exclusions>
+		<maven-jar-plugin.version>3.1.1</maven-jar-plugin.version>
+	</properties>
+<distributionManagement>
+    <repository>
+        <id>bootnext-repository</id>
+        <url>http://ad22472a9ef314fbd85c5f9dcc50fdc2-774054408.ap-south-1.elb.amazonaws.com:8080/releases</url>
+    </repository>
+</distributionManagement>
+	<repositories>
+		<repository>
+			<id>internal-repository</id>
+			<url>https://repo.maven.apache.org/maven2</url>
+			<releases>
+				<updatePolicy>always</updatePolicy>
+			</releases>
+		</repository>
+		<repository>
+			<id>central</id>
+			<name>Maven Repository Switchboard</name>
+			<layout>default</layout>
+			<url>https://repo.maven.apache.org/maven2</url>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+				<checksumPolicy>fail</checksumPolicy>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+	<dependencies>
+		<dependency>
+			<groupId>com.bootnext.platform</groupId>
+			<artifactId>bootnext-core</artifactId>
+			<version>3.1.0</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.bootnext.platform</groupId>
+			<artifactId>bootnext-mysql-impl</artifactId>
+			<version>3.1.0</version>
+<exclusions>
+		  <exclusion>
+			  <groupId>com.github.jsqlparser</groupId>
+			<artifactId>jsqlparser</artifactId>
+		  </exclusion>
+	  </exclusions>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.velocity/velocity-engine-core -->
+		<dependency>
+			<groupId>org.apache.velocity</groupId>
+			<artifactId>velocity-engine-core</artifactId>
+			<version>2.3</version>
+		</dependency>
+		<dependency>
+			<groupId>com.bootnext.commons</groupId>
+			<artifactId>spatial-utility</artifactId>
+			<version>4.0.0</version>
+		</dependency>
+	
+	
+	<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-cassandra</artifactId>
+    <version>2.6.0</version> <!-- Replace with the desired version -->
+</dependency>
+<dependency>
+			<groupId>com.bootnext.commons</groupId>
+			<artifactId>detrace-log</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+	</dependencies>
+	
+	<profiles>
+		<profile>
+			<id>sonar</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<!-- Optional URL to server. Default value is http://localhost:9000 -->
+				<sonar.host.url>
+       http://localhost:9000
+</sonar.host.url>
+			</properties>
+		</profile>
+	</profiles>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.11.0</version>
+				<configuration>
+					<target>17</target>
+					<source>17</source>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
+

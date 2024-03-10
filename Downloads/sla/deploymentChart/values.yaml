@@ -1,0 +1,136 @@
+# Default values for appserver.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+
+  repository: bootnext/sla
+  tag: 4.0.0
+  pullPolicy: IfNotPresent
+
+           
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: "sla"
+
+sidecar:
+  Name: melody-service
+  image:
+    repository: bootnext/melody-service
+    tag: 1.0.0
+    pullPolicy: Always
+  ports:
+    containerPort: 8081
+
+podAnnotations:
+  prometheus.io/scrape: "false"
+  prometheus.io/path: /sla/rest/actuator/prometheus
+  prometheus.io/scheme: http
+  prometheus.io/port: "8082"
+  melody.prometheus.io/scrape: "false"
+  melody.prometheus.io/path: "/sla/monitoring"
+  melody.prometheus.io/port: "8082" 
+  melody.prometheus.io/scheme: "http"
+  sidecar.istio.io/inject: "false"
+
+
+
+#podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 9030
+
+
+resourceLimit:
+  enabled: true
+  
+# Resource limit availble on node
+resourcesLimits:
+  cpu: 500m
+  memory: 1G
+
+# Resoucr Requested for container
+requestsResources:
+  cpu: 500m
+  memory: 512M
+
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+
+
+#READYNESS
+
+livenessProbe:
+  path: /sla/rest/ping
+  initialDelaySeconds: 120
+  periodSeconds: 40
+  failureThreshold: 3
+  timeoutSeconds: 5
+
+readinessProbe:
+  path: /sla/rest/ping
+  initialDelaySeconds: 90
+  periodSeconds: 30
+  failureThreshold: 3
+  timeoutSeconds: 5
+
+
+## FOR VOLUME MOUNTS
+
+volumeMounts:
+  applicationPropPath: /opt/bootnext/sla/application.properties
+  configPropPath: /opt/bootnext/sla/config.properties
+
+
+
+##FOR VOLUMES
+
+volumeName:
+  applicationProp: applicationprop
+  configProp: configprop
+
+  
+
+## FOR ENV
+
+env:
+    mysqlUrl: "sWdkaROVSANZLjA5rUbkgM3l08kl36GU22uxYyMydzWAAXxP34iYWBVxRgeRH5opY6G13IKNPC5zeyBKSddr6eJjpPdL6UAmuJMXDj+C7qved0qOy30D0GqF5bdgxPtZ2dWXyzKjN3tunJbe6jpk3Q=="
+    #mysqlUsername: "fliN0yGsA+2S7AXGW6lHWA==:nEmQAHJH41p1voWnfNe3Sw==:pVkXqRGlHCbXyzwf+CAGug=="
+    #mysqlChecksum: "SP9gzfLU2eUzpm5QjxoF+g==:T1OJgqaDEZBsb8fbCWWrxQ==:KF4Fs6+fcPLQVhTUUcBBQg=="
+    mysqlUsername: ${sla_user}
+    mysqlChecksum: ${sla_db_pass}
+    baseutilityUrl: "kH0p345LQ0hyKeEn8IammGB0uWLnnQZIozDXJLFcUlA="
+    servicePort: 9030
+    serviceContext: "/sla"
+    Xmx: "1024m"
+    Xms: "512m"
+    serviceUrl: "http:/sla/um/rest"
+    READINESS: "/sla/rest/ping"
+    service_Path: "/opt/bootnext/sla"
+    commonsStorageType: "local"
+    melodyContext: "/sla"
+    readiness: "/sla/rest/ping"     
+    melodyCredentials: ""   
+    melodyUrl: "apm-collectserver.ansible.svc.cluster.local:80/APM/?"
+    port: "9030"  
+    deploymentName: "sla" 
+
+
